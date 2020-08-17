@@ -1,13 +1,16 @@
-const route = require("express").Router()
+// Import express
+const route = require('express').Router()
 
-// import route disini
+// Import from routes
 const product = require('./routes/product')
 const category = require('./routes/category')
-// const category = ....
+const history = require('./routes/history')
+const order = require('./routes/order')
 
-// buat middle disini
+// Middleware
 route.use('/product', product)
 route.use('/category', category)
-// route.use('/category', product)
+route.use('/history', history)
+route.use('/order', order)
 
 module.exports = route

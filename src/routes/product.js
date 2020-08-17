@@ -2,10 +2,16 @@
 const router = require('express').Router()
 
 // Import object dari controller
-const {getAllProduct, getProductById, postProduct, patchProduct, deleteProduct} = require('../controller/product')
+const {
+  getProduct,
+  getProductById,
+  postProduct,
+  patchProduct,
+  deleteProduct
+} = require('../controller/product')
 
 // [GET]
-router.get('/', getAllProduct)
+router.get('/', getProduct)
 router.get('/:id', getProductById)
 
 // [POST]
