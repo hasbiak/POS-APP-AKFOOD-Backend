@@ -10,7 +10,7 @@ const {
   } = require('../model/product')
   
   // Import query string
-  const qs = require('querystring')
+  const queryStrings = require('querystring')
   
   // Import helper
   const helper = require('../helper')
@@ -22,7 +22,7 @@ const {
         page: page - 1
       }
       const resultPrevLink = { ...currentQuery, ...generatePage }
-      return qs.stringify(resultPrevLink)
+      return queryStrings.stringify(resultPrevLink)
     } else {
       return null
     }
@@ -34,7 +34,7 @@ const {
         page: page + 1
       }
       const resultPrevLink = { ...currentQuery, ...generatePage }
-      return qs.stringify(resultPrevLink)
+      return queryStrings.stringify(resultPrevLink)
     } else {
       return null
     }

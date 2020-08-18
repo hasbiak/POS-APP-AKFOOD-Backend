@@ -4,12 +4,9 @@ const {
   getHistoryCount,
   getHistoryById
 } = require('../model/history')
-// const {
-//   getOrderByHistoryId
-// } = require('../model/order')
 
 // Import query string
-const qs = require('querystring')
+const queryStrings = require('querystring')
 
 // Import helper
 const helper = require('../helper')
@@ -21,7 +18,7 @@ const getPrevLink = (page, currentQuery) => {
       page: page - 1
     }
     const resultPrevLink = { ...currentQuery, ...generatePage }
-    return qs.stringify(resultPrevLink)
+    return queryStrings.stringify(resultPrevLink)
   } else {
     return null
   }
@@ -33,7 +30,7 @@ const getNextLink = (page, totalPage, currentQuery) => {
       page: page + 1
     }
     const resultPrevLink = { ...currentQuery, ...generatePage }
-    return qs.stringify(resultPrevLink)
+    return queryStrings.stringify(resultPrevLink)
   } else {
     return null
   }
@@ -75,16 +72,12 @@ module.exports = {
     try {
       const { id } = request.params
       const dataHistory = await getHistoryById(id)
-      const dataOrder = await getOrderByHistoryId(id)
       let total = 0
-      dataOrder.forEach(value => {
-        total += value.order_total_price
-      })
+      
       const tax = total * 10 / 100
       const result = {
         history_id: dataHistory[0].history_id,
         invoice: dataHistory[0].history_invoice,
-        orders: dataOrder,
         tax,
         subtotal: dataHistory[0].history_subtotal,
         history_created_at: dataHistory[0].history_created_at
