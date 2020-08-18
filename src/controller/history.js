@@ -4,9 +4,9 @@ const {
   getHistoryCount,
   getHistoryById
 } = require('../model/history')
-const {
-  getOrderByHistoryId
-} = require('../model/order')
+// const {
+//   getOrderByHistoryId
+// } = require('../model/order')
 
 // Import query string
 const qs = require('querystring')
