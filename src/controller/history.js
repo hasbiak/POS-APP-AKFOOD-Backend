@@ -4,9 +4,12 @@ const {
   getHistoryCount,
   getHistoryById
 } = require('../model/history')
+const {
+  getOrderByHistoryId
+} = require('../model/order')
 
 // Import query string
-const queryStrings = require('querystring')
+const qs = require('querystring')
 
 // Import helper
 const helper = require('../helper')
@@ -18,7 +21,7 @@ const getPrevLink = (page, currentQuery) => {
       page: page - 1
     }
     const resultPrevLink = { ...currentQuery, ...generatePage }
-    return queryStrings.stringify(resultPrevLink)
+    return qs.stringify(resultPrevLink)
   } else {
     return null
   }
@@ -30,7 +33,7 @@ const getNextLink = (page, totalPage, currentQuery) => {
       page: page + 1
     }
     const resultPrevLink = { ...currentQuery, ...generatePage }
-    return queryStrings.stringify(resultPrevLink)
+    return qs.stringify(resultPrevLink)
   } else {
     return null
   }
@@ -39,9 +42,9 @@ const getNextLink = (page, totalPage, currentQuery) => {
 module.exports = {
   getAllHistory: async (request, response) => {
     let { page, limit, sort } = request.query
-    page === undefined ? page = 1 : page = parseInt(page)
-    limit === undefined ? limit = 3 : limit = parseInt(limit)
-    if (sort === undefined) {
+    page === undefined || page === '' ? page = 1 : page = parseInt(page)
+    limit === undefined || limit === '' ? limit = 3 : limit = parseInt(limit)
+    if (sort === undefined || sort === '') {
       sort = 'history_id'
     }
     const totalData = await getHistoryCount()
@@ -72,12 +75,16 @@ module.exports = {
     try {
       const { id } = request.params
       const dataHistory = await getHistoryById(id)
+      const dataOrder = await getOrderByHistoryId(id)
       let total = 0
-      
+      dataOrder.forEach(value => {
+        total += value.order_total_price
+      })
       const tax = total * 10 / 100
       const result = {
         history_id: dataHistory[0].history_id,
         invoice: dataHistory[0].history_invoice,
+        orders: dataOrder,
         tax,
         subtotal: dataHistory[0].history_subtotal,
         history_created_at: dataHistory[0].history_created_at

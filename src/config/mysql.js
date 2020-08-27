@@ -14,7 +14,7 @@ connection.connect(error => {
   if (error) {
     throw error
   }
-  console.log(`Now you are connected to the database: ${process.env.DB_NAME}`)
+  console.log(`You are now connected to database: ${process.env.DB_NAME}`)
 })
 
 // Export connection
