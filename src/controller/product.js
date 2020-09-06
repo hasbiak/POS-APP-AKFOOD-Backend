@@ -1,156 +1,222 @@
-// Import object from model
 const {
   getProduct,
-  getProductCount,
-  getProductCountByName,
+  getWithOutSort,
   getProductById,
+  getProductByName,
   postProduct,
   patchProduct,
-  deleteProduct
-} = require('../model/product')
+  deleteProduct,
+  getProductCount,
+} = require("../model/product");
+const helper = require("../helper/index");
+const qs = require("querystring");
+const redis = require("redis");
+const client = redis.createClient();
 
-// Import query string
-const qs = require('querystring')
-
-// Import helper
-const helper = require('../helper')
-
-// Pagination
 const getPrevLink = (page, currentQuery) => {
   if (page > 1) {
-    const generatePage = {
-      page: page - 1
-    }
-    const resultPrevLink = { ...currentQuery, ...generatePage }
-    return qs.stringify(resultPrevLink)
+    const generatedPage = {
+      page: page - 1,
+    };
+    const resultPrevLink = { ...currentQuery, ...generatedPage };
+    return qs.stringify(resultPrevLink);
   } else {
-    return null
+    return null;
   }
-}
-
+};
 const getNextLink = (page, totalPage, currentQuery) => {
   if (page < totalPage) {
-    const generatePage = {
-      page: page + 1
-    }
-    const resultPrevLink = { ...currentQuery, ...generatePage }
-    return qs.stringify(resultPrevLink)
+    const generatedPage = {
+      page: page + 1,
+    };
+    const resultNextLink = { ...currentQuery, ...generatedPage };
+    return qs.stringify(resultNextLink);
   } else {
-    return null
+    return null;
   }
-}
+};
 
 module.exports = {
-  getProduct: async (request, response) => {
-    let { page, limit, search, sort } = request.query
-    page === undefined || page === '' ? page = 1 : page = parseInt(page)
-    limit === undefined || limit === '' ? limit = 3 : limit = parseInt(limit)
-    let totalData = 0
-    if (search === undefined) {
-      search = ''
-      totalData = await getProductCount()
-    } else {
-      totalData = await getProductCountByName(search)
-    }
-    if (sort === undefined || sort === '') {
-      sort = 'product_id'
-    }
-    const totalPage = Math.ceil(totalData / limit)
-    const offset = page * limit - limit
-    const prevLink = getPrevLink(page, request.query)
-    const nextLink = getNextLink(page, totalPage, request.query)
+  getAllProduct: async (request, response) => {
+    let { sort, page, limit, ascdsc } = request.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    let totalData = await getProductCount();
+    let totalPage = Math.ceil(totalData / limit);
+    let offset = page * limit - limit;
+    let prevLink = getPrevLink(page, request.query);
+    let nextLink = getNextLink(page, totalPage, request.query);
     const pageInfo = {
       page,
       totalPage,
       limit,
       totalData,
       prevLink: prevLink && `http://127.0.0.1:3001/product?${prevLink}`,
-      nextLink: nextLink && `http://127.0.0.1:3001/product?${nextLink}`
-    }
+      nextLink: nextLink && `http://127.0.0.1:3001/product?${nextLink}`,
+    };
+
     try {
-      const result = await getProduct(search, sort, limit, offset)
-      if (result.length > 0) {
-        return helper.response(response, 200, 'Success Get Product', result, pageInfo)
+      if (typeof sort === "undefined") {
+        const withOutSort = await getWithOutSort(limit, offset);
+          const newData = { withOutSort, pageInfo };
+      client.set(
+        `getproduct:${JSON.stringify(request.query)}`,
+        JSON.stringify(newData)
+      );
+        return helper.response(
+          response,
+          200,
+          "Success Get Product",
+          withOutSort,
+          pageInfo
+        );
       } else {
-        return helper.response(response, 404, 'Product not found', result, pageInfo)
+        const result = await getProduct(sort, limit, offset, ascdsc);
+         const newData = { result, pageInfo };
+      client.set(
+        `getproduct:${JSON.stringify(request.query)}`,
+        JSON.stringify(newData)
+      );
+        return helper.response(response,200,`Success Get Product with sort by ${sort}`,result,pageInfo)
       }
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(response, 400, "Bad Request!", error);
     }
   },
   getProductById: async (request, response) => {
     try {
-      const { id } = request.params
-      const result = await getProductById(id)
+      const { id } = request.params;
+      const result = await getProductById(id);
       if (result.length > 0) {
-        return helper.response(response, 200, 'Get Product Success', result)
+        client.setex(`getproductbyid:${id}`, 10000, JSON.stringify(result));
+        return helper.response(
+          response,
+          200,
+          `Success Get Product By ID: ${id}`,
+          result
+        );
       } else {
-        return helper.response(response, 404, `Product by id: ${id} not found`, result)
+        return helper.response(
+          response,
+          404,
+          `Product by ID : ${id} Not Found`
+        );
       }
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(response, 400, "Bad Request", error);
+    }
+  },
+  getProductByName: async (request, response) => {
+    try {
+      const { name, limit } = request.query;
+      const result = await getProductByName(name, limit);
+      if (result.length > 0) {
+        return helper.response(
+          response,
+          200,
+          `Success Get Product By Name: ${name}`,
+          result
+        );
+      } else {
+        return helper.response(
+          response,
+          404,
+          `Product By Name: ${name} not found`
+        );
+      }
+    } catch (error) {
+      return helper.response(response, 400, "Bad Request", error);
     }
   },
   postProduct: async (request, response) => {
     try {
-      const productName = request.body.product_name
-      const productImg = request.body.product_image
-      const productPrice = request.body.product_price
-      const categoryId = request.body.category_id
-      const productStatus = request.body.product_status
+      const {
+        product_name,
+        product_price,
+        product_status,
+        category_id,
+      } = request.body;
       const setData = {
-        product_name: productName,
-        product_image: productImg,
-        product_price: productPrice,
-        category_id: categoryId,
+        product_name,
+        product_price,
+        product_image: request.file === undefined ? "" : request.file.filename,
         product_created_at: new Date(),
-        product_status: productStatus
-      }
-      const result = await postProduct(setData)
-      return helper.response(response, 201, 'Product Added', result)
+        product_status,
+        category_id,
+      };
+      const result = await postProduct(setData);
+      console.log(result);
+      return helper.response(response, 201, "Product Created", result);
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(response, 400, "Bad Request", error);
     }
   },
   patchProduct: async (request, response) => {
     try {
-      const { id } = request.params
-      const productName = request.body.product_name
-      const productImg = request.body.product_image
-      const productPrice = request.body.product_price
-      const categoryId = request.body.category_id
-      const productStatus = request.body.product_status
+      const { id } = request.params;
+      const {
+        product_name,
+        product_price,
+        product_status,
+        category_id,
+      } = request.body;
       const setData = {
-        product_name: productName,
-        product_image: productImg,
-        product_price: productPrice,
-        category_id: categoryId,
+        product_name,
+        product_price,
+        product_image: request.file === undefined ? "" : request.file.filename,
         product_updated_at: new Date(),
-        product_status: productStatus
-      }
-      const checkId = await getProductById(id)
+        product_status,
+        category_id,
+      };
+      const checkId = await getProductById(id);
+      let fs = require("fs");
       if (checkId.length > 0) {
-        const result = await patchProduct(setData, id)
-        return helper.response(response, 201, 'Product Updated', result)
+        const result = await patchProduct(setData, id);
+
+        console.log(checkId);
+        fs.unlink(`./uploads/${checkId[0].product_image}`, function (err) {
+          if (err) throw err;
+          console.log("file deleted...");
+        });
+        return helper.response(response, 201, "Product Updated", result);
       } else {
-        return helper.response(response, 404, `Product by id: ${id} Not Found`)
+        return helper.response(
+          response,
+          404,
+          `Product By Id : ${id} Not Found`
+        );
       }
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(response, 400, "Bad Request", error);
     }
   },
   deleteProduct: async (request, response) => {
     try {
-      const { id } = request.params
-      const checkId = await getProductById(id)
-      if (checkId.length > 0) {
-        const result = await deleteProduct(id)
-        return helper.response(response, 201, 'Product Deleted', result)
+      let fs = require("fs");
+      const { id } = request.params;
+      const cekId = await getProductById(id);
+      if (cekId.length > 0) {
+        fs.unlink(`./uploads/${cekId[0].product_image}`, function (
+          error,
+          result
+        ) {
+          if (!error) {
+            console.log(result);
+          } else {
+            console.log(error);
+          }
+        });
+        const result = await deleteProduct(id);
+        return helper.response(response, 201, "Product Deleted", result);
       } else {
-        return helper.response(response, 404, `Product by id: ${id} Not Found`)
+        return helper.response(
+          response,
+          404,
+          `Data By Id: ${id} unknown / has been deleted`
+        );
       }
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(response, 400, "Bad Request", error);
     }
-  }
-}
+  },
+};

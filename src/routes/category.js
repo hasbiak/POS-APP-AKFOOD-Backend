@@ -1,26 +1,25 @@
-// Import express
-const router = require('express').Router()
-
-// Import object from controller
+const router = require("express").Router();
 const {
   getAllCategory,
   getCategoryById,
   postCategory,
   patchCategory,
-  deleteCategory
-} = require('../controller/category')
+  deleteCategory,
+} = require("../controller/category");
+const { authorization } = require("../middleware/auth");
+const {
+  getCategoryByIdRedis,
+  clearDataCategoryRedis,
+  getCategoryRedis,
+} = require("../middleware/redis");
 
-// [GET]
-router.get('/', getAllCategory)
-router.get('/:id', getCategoryById)
+router.get("/", getCategoryRedis, getAllCategory); //authorization
+router.get("/:id",  getCategoryByIdRedis, getCategoryById); //authorization
 
-// [POST]
-router.post('/', postCategory)
+router.post("/",  postCategory); //authorization
 
-// [PATCH]
-router.patch('/:id', patchCategory)
+router.patch("/:id",  clearDataCategoryRedis, patchCategory); //authorization
 
-// [DELETE]
-router.delete('/:id', deleteCategory)
+router.delete("/:id", clearDataCategoryRedis, deleteCategory); //authorization
 
-module.exports = router
+module.exports = router;

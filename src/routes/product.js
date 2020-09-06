@@ -1,26 +1,28 @@
-// Import express
-const router = require('express').Router()
-
-// Import object dari controller
+const router = require("express").Router();
 const {
-  getProduct,
+  getAllProduct,
   getProductById,
   postProduct,
   patchProduct,
-  deleteProduct
-} = require('../controller/product')
+  deleteProduct,
+  getProductByName,
+} = require("../controller/product");
+// const { authorization } = require("../middleware/auth");
+const {
+  getProductByIdRedis,
+  clearDataProductRedis,
+  getProductRedis,
+} = require("../middleware/redis");
+const uploadImage = require("../middleware/multer");
 
-// [GET]
-router.get('/', getProduct)
-router.get('/:id', getProductById)
+router.get("/", getAllProduct); //authorization, getProductRedis
+router.get("/:id", getProductByIdRedis, getProductById); //authorization
+router.get("/search/name", getProductByName); //authorization
 
-// [POST]
-router.post('/', postProduct)
+router.post("/", uploadImage, postProduct); //authorization
 
-// [PATCH]
-router.patch('/:id', patchProduct)
+router.patch("/:id", uploadImage, clearDataProductRedis, patchProduct); //authorization
 
-// [DELETE]
-router.delete('/:id', deleteProduct)
+router.delete("/:id", clearDataProductRedis, deleteProduct); //authorization
 
-module.exports = router
+module.exports = router;

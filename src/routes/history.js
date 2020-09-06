@@ -1,14 +1,26 @@
-// Import express
-const router = require('express').Router()
-
-// Import object dari controller
+const router = require("express").Router();
 const {
   getAllHistory,
-  getHistoryById
-} = require('../controller/history')
+  getHistoryById,
+  postHistory,
+  CheckOut,
+  patchHistory,
+} = require("../controller/history");
+const { authorization } = require("../middleware/auth");
+const {
+  getHistoryByIdRedis,
+  clearDataHistoryRedis,
+  getHistoryRedis,
+} = require("../middleware/redis");
 
 // [GET]
-router.get('/', getAllHistory)
-router.get('/:id', getHistoryById)
+router.get("/", getAllHistory); //authorization getHistoryRedis
+router.get("/:id", getHistoryByIdRedis, getHistoryById); //authorization
 
-module.exports = router
+// [POST]
+router.post("/", postHistory);  //authorization
+router.post("/CheckOut", CheckOut); // authorization
+// [PATCH/PUT]
+router.patch("/:id", clearDataHistoryRedis, patchHistory);//authorization
+
+module.exports = router;

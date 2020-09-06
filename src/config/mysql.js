@@ -1,21 +1,17 @@
-// Import dependencies
-const mysql = require('mysql')
-
-// Connect to database using env
+require("dotenv/config");
+const mysql = require("mysql");
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_NAME
-})
+  database: process.env.DB_NAME,
+});
 
-// Error handling when failed to connect to database
-connection.connect(error => {
+connection.connect((error) => {
   if (error) {
-    throw error
+    throw error;
   }
-  console.log(`You are now connected to database: ${process.env.DB_NAME}`)
-})
+  console.log("You are now Connected!...");
+});
 
-// Export connection
-module.exports = connection
+module.exports = connection;
