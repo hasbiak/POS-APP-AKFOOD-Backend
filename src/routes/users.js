@@ -6,7 +6,7 @@ const {
 } = require("../controller/users");
 
 router.post("/register", registerUser);
-router.get("/login", loginUser);
+router.post("/login", loginUser);
 router.patch("/admin", activateAccount);
 
 module.exports = router;

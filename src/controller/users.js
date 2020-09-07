@@ -72,7 +72,7 @@ module.exports = {
               user_role,
               user_status,
             };
-            const token = jwt.sign(payLoad, "Rahasia", { expiresIn: "10h" });
+            const token = jwt.sign(payLoad, "Rahasia", { expiresIn: "24h" });
             payLoad = { ...payLoad, token };
             console.log("success login");
             return helper.response(response, 200, "Successfull Login", payLoad);
@@ -98,10 +98,17 @@ module.exports = {
   },
   activateAccount: async (request, response) => {
     try {
-      const { user_email, user_name, user_role, user_status } = request.body;
+      const {
+        user_email,
+        user_name,
+        user_password,
+        user_role,
+        user_status,
+      } = request.body;
       const setData = {
         user_email,
         user_name,
+        user_password,
         user_role,
         user_status,
       };
