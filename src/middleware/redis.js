@@ -7,10 +7,8 @@ module.exports = {
     const { id } = request.params;
     client.get(`getproductbyid:${id}`, (error, result) => {
       if (!error && result != null) {
-        console.log("data ada di dalam redis");
         return helper.response(response, 200, JSON.parse(result));
       } else {
-        console.log("data tidak ada di dalam redis");
         next();
       }
     });

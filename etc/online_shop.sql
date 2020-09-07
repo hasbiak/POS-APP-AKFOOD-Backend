@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 27 Agu 2020 pada 06.56
+-- Waktu pembuatan: 07 Sep 2020 pada 14.46
 -- Versi server: 10.4.13-MariaDB
 -- Versi PHP: 7.2.32
 
@@ -63,7 +63,21 @@ INSERT INTO `history` (`history_id`, `history_invoice`, `history_subtotal`, `his
 (1, 763528, 55000, '2020-08-26 16:10:47'),
 (2, 611691, 83600, '2020-08-26 16:11:27'),
 (3, 647501, 127600, '2020-08-26 16:11:36'),
-(4, 477166, 264000, '2020-08-26 16:11:47');
+(4, 477166, 264000, '2020-08-26 16:11:47'),
+(5, 602531, 0, '2020-08-27 22:51:16'),
+(6, 260070, 0, '2020-08-30 07:14:08'),
+(7, 903832, 0, '2020-08-30 17:41:13'),
+(8, 169733, 0, '2020-08-31 00:34:51'),
+(9, 813970, 0, '2020-08-31 00:34:52'),
+(10, 279453, 0, '2020-08-31 00:34:55'),
+(11, 809692, 0, '2020-08-31 00:34:55'),
+(12, 703429, 0, '2020-08-31 00:34:55'),
+(13, 240343, 0, '2020-08-31 00:34:59'),
+(14, 506387, 0, '2020-08-31 00:35:00'),
+(15, 342972, 0, '2020-08-31 00:35:00'),
+(16, 977722, 0, '2020-08-31 00:35:01'),
+(17, 405191, 0, '2020-08-31 00:37:57'),
+(18, 309363, 0, '2020-08-31 01:54:42');
 
 -- --------------------------------------------------------
 
@@ -115,15 +129,44 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `product_name`, `product_image`, `product_price`, `category_id`, `product_created_at`, `product_updated_at`, `product_status`) VALUES
-(1, 'Espresso', '#', 10000, 1, '2020-08-12 08:15:23', '2020-08-26 17:04:41', 1),
-(2, 'Coffee Latte', '#', 15000, 1, '2020-08-13 00:01:26', '0000-00-00 00:00:00', 1),
-(3, 'Cappuccino', '#', 5000, 1, '2020-08-13 00:01:41', '0000-00-00 00:00:00', 1),
-(4, 'Red Velvet Latte', '#', 33000, 1, '2020-08-13 00:02:12', '0000-00-00 00:00:00', 1),
-(5, 'Choco Rum', '#', 28000, 1, '2020-08-13 00:02:28', '2020-08-13 00:03:17', 1),
-(6, 'Black Forest', '#', 30000, 2, '2020-08-13 00:03:48', '2020-08-26 16:50:36', 1),
-(7, 'Chicken Katsu Dabu-dabu', '#', 60000, 2, '2020-08-13 00:04:07', '0000-00-00 00:00:00', 1),
-(8, 'Salmon Truffle Teriyaki', '#', 60000, 2, '2020-08-13 00:04:22', '0000-00-00 00:00:00', 1),
-(9, 'Wiener Schnitzel', '#', 69000, 2, '2020-08-13 00:04:35', '0000-00-00 00:00:00', 1);
+(1, 'Espresso', 'product_image-2020-09-07T03-45-42.758Z-bear.png', 10000, 1, '2020-08-12 08:15:23', '2020-09-07 03:45:42', 1),
+(2, 'Coffee Latte', 'product_image-2020-09-07T08-02-11.862Z-chocorum.png', 30000, 1, '2020-08-13 00:01:26', '2020-09-07 08:02:11', 1),
+(3, 'Cappuccino', 'product_image-2020-09-07T03-58-03.042Z-bear.png', 5000, 1, '2020-08-13 00:01:41', '2020-09-07 03:58:03', 1),
+(4, 'Red Velvet Latte', 'product_image-2020-09-07T04-00-17.450Z-redvelvet.png', 33000, 1, '2020-08-13 00:02:12', '2020-09-07 04:00:17', 1),
+(5, 'Choco Rum', '', 28000, 1, '2020-08-13 00:02:28', '2020-08-13 00:03:17', 1),
+(6, 'Black Forest', '', 30000, 1, '2020-08-13 00:03:48', '2020-09-01 10:52:00', 1),
+(7, 'Chicken Katsu Dabu-dabu', '', 60000, 2, '2020-08-13 00:04:07', '0000-00-00 00:00:00', 1),
+(8, 'Salmon Truffle Teriyaki', '', 60000, 2, '2020-08-13 00:04:22', '0000-00-00 00:00:00', 1),
+(9, 'Wiener Schnitzel', '', 69000, 2, '2020-08-13 00:04:35', '0000-00-00 00:00:00', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `user`
+--
+
+CREATE TABLE `user` (
+  `user_id` int(11) NOT NULL,
+  `user_email` varchar(150) NOT NULL,
+  `user_password` varchar(255) NOT NULL,
+  `user_name` varchar(100) NOT NULL,
+  `user_role` int(1) NOT NULL,
+  `user_status` int(1) NOT NULL,
+  `user_created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `user_updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data untuk tabel `user`
+--
+
+INSERT INTO `user` (`user_id`, `user_email`, `user_password`, `user_name`, `user_role`, `user_status`, `user_created_at`, `user_updated_at`) VALUES
+(1, 'hasbialwi70@gmail.com', '$2b$10$W1X6HdALpH0Xuk3cYiNbduJquGRp1GGJAxjnoyARdnXLGHgegSk6O', 'hasbiak', 2, 1, '2020-09-06 18:25:11', '2020-09-01 04:03:59'),
+(2, 'hasbialwi77@gmail.com', '$2b$10$9yg7HoZ8Iz5kRN2FRN5dNOFOVC8mM9ecQmZJlg6pdlzOHbWwAErBO', 'Hasbi', 2, 1, '2020-09-06 20:48:43', '2020-09-06 16:17:17'),
+(8, 'hasbialwi78gmail.com', '$2b$10$SaaYsSpQV0CMPtOng8YPgOSk7ozLRrWoekhBqpY6Mk.tfS/XFINNi', 'Hasbi', 2, 0, '2020-09-07 07:20:00', '2020-09-07 07:20:00'),
+(9, 'hasbialwi70gmail.com', '$2b$10$gFOY57JQ5riU2rD0KRKFaO6nvtvjqwifS3nEs7YxaB1JJHq10Z5h6', 'Hasbi', 2, 0, '2020-09-07 07:24:52', '2020-09-07 07:24:52'),
+(10, 'hasbialwi80gmail.com', '$2b$10$.4p08L5stI7yz9D.rFBL6.GDCeh1lEN564lzRM.iI7XzG7jXyvzRy', 'Hasbi', 2, 0, '2020-09-07 07:50:56', '2020-09-07 07:50:56'),
+(11, 'hasbialwi80@gmail.com', '12345678', 'Hasbi', 2, 1, '2020-09-07 07:52:52', '2020-09-07 07:51:39');
 
 --
 -- Indexes for dumped tables
@@ -154,6 +197,12 @@ ALTER TABLE `product`
   ADD PRIMARY KEY (`product_id`);
 
 --
+-- Indeks untuk tabel `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`user_id`);
+
+--
 -- AUTO_INCREMENT untuk tabel yang dibuang
 --
 
@@ -167,7 +216,7 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT untuk tabel `history`
 --
 ALTER TABLE `history`
-  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT untuk tabel `orders`
@@ -179,7 +228,13 @@ ALTER TABLE `orders`
 -- AUTO_INCREMENT untuk tabel `product`
 --
 ALTER TABLE `product`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
+-- AUTO_INCREMENT untuk tabel `user`
+--
+ALTER TABLE `user`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

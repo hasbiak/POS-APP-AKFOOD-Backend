@@ -48,16 +48,14 @@ module.exports = {
     try {
       const { user_email, user_password } = request.body;
       const checkDataUser = await checkUser(user_email);
-      // ========================================================================================
+
       if (checkDataUser.length >= 1) {
         if (checkDataUser[0].user_status == 1) {
-          //proses kedua
           const checkPassword = bcrypt.compareSync(
             user_password,
             checkDataUser[0].user_password
           );
           if (checkPassword) {
-            //   proses 3 = set JWT
             const {
               user_id,
               user_email,
@@ -87,9 +85,7 @@ module.exports = {
             "Your Account is inactive. Please contact your admin"
           );
         }
-      }
-      // ========================================================================================
-      else {
+      } else {
         return helper.response(response, 400, "Email Not Registered");
       }
     } catch (error) {
