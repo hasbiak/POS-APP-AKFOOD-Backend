@@ -33,7 +33,7 @@ Open .env file on your favorite code editor, and copy paste this code below :
 DB_HOST=localhost // Database Host
 DB_ROOT=root // Database Root
 DB_PASSWORD= // Password set for database is empty
-DB_NAME=online_shop // Database
+DB_NAME=akfood // Database
 ```
 
 ## End Point
