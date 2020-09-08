@@ -20,7 +20,7 @@ Foodipie is web application for order some menu, there are Restfull API for prod
 2. Type `npm install`
 3. Make new file a called **.env**, set up first [here](#set-up-env-file)
 4. Turn on Web Server and MySQL can using Third-party tool like xampp, etc.
-5. Create a database with the name #nama_database, and Import file sql to **phpmyadmin**
+5. Create a database with the name akfood, and Import file sql to **phpmyadmin**
 6. Open Postman desktop application or Chrome web app extension that has installed before
 7. Choose HTTP Method and enter request url.(ex. localhost:3001/)
 8. You can see all the end point [here](#end-point)
@@ -34,6 +34,9 @@ DB_HOST=localhost // Database Host
 DB_ROOT=root // Database Root
 DB_PASSWORD= // Password set for database is empty
 DB_NAME=akfood // Database
+
+DB_PORT=3001
+DB_IP=127.0.0.1
 ```
 
 ## End Point
@@ -97,5 +100,3 @@ DB_NAME=akfood // Database
 **Documentation API**
 
 https://web.postman.co/collections/12329591-c5b28761-cd7e-4a4a-96e2-3a1324169b02?version=latest&workspace=ed9da054-53e6-410a-83b5-b5aec64d38ac#511a9bbc-3ca2-4439-a8d8-de6382ef38f0
-
-# AKFOOD-BACKEND
