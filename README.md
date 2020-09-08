@@ -1,6 +1,6 @@
 <h1 align="center">ExpressJS - AKFOOD RESTfull API</h1>
 
-Foodipie is web application for order some menu, there are Restfull API for product, product category, order, and history. [More about Express](https://en.wikipedia.org/wiki/Express.js)
+AKFOOD is web application for order some menu, there are Restfull API for product, product category, order, and history. [More about Express](https://en.wikipedia.org/wiki/Express.js)
 
 ## Built With
 
