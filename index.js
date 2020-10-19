@@ -3,16 +3,15 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
-
 const routerNavigation = require("./src");
-
 const app = express();
 
-// Middleware
 app.use(cors());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan("dev"));
+app.use(express.static("uploads"));
 app.use((request, response, next) => {
   response.header("Access-Control-Allow-Origin", "*");
   response.header(
@@ -21,10 +20,15 @@ app.use((request, response, next) => {
   );
   next();
 });
+
 app.use("/", routerNavigation);
 
 app.get("*", (request, response) => {
-  response.status(404).send("Path Not Found !");
+  response.status(404).send("Path not Found");
 });
 
-app.listen(process.env.DB_PORT, process.env.DB_IP);
+app.listen(process.env.PORT, process.env.IP, () => {
+  console.log(
+    `Express app is listening on host: ${process.env.IP} and port: ${process.env.PORT}`
+  );
+});

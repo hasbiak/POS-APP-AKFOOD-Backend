@@ -1,34 +1,44 @@
 const router = require("express").Router();
 const {
   getAllProduct,
+  getAllProductByName,
   getProductById,
   postProduct,
   patchProduct,
   deleteProduct,
-  getProductByName,
 } = require("../controller/product");
-const { authorization } = require("../middleware/auth");
+const { authorization, authorization2 } = require("../middleware/auth");
 const {
   getProductByIdRedis,
+  getAllProductRedis,
+  getProductByNameRedis,
   clearDataProductRedis,
-  getProductRedis,
 } = require("../middleware/redis");
+
 const uploadImage = require("../middleware/multer");
 
-router.get("/", authorization, getProductRedis, getAllProduct);
+router.get("/", authorization, getAllProductRedis, getAllProduct);
 router.get("/:id", authorization, getProductByIdRedis, getProductById);
-router.get("/search/name", authorization, getProductByName);
-
-router.post("/", authorization, uploadImage, postProduct);
-
+router.get(
+  "/search/name",
+  authorization,
+  getProductByNameRedis,
+  getAllProductByName
+);
+router.post(
+  "/",
+  authorization2,
+  clearDataProductRedis,
+  uploadImage,
+  postProduct
+);
 router.patch(
   "/:id",
-  authorization,
-  uploadImage,
+  authorization2,
   clearDataProductRedis,
+  uploadImage,
   patchProduct
 );
-
-router.delete("/:id", authorization, clearDataProductRedis, deleteProduct);
+router.delete("/:id", authorization2, clearDataProductRedis, deleteProduct);
 
 module.exports = router;

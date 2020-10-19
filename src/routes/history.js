@@ -2,23 +2,44 @@ const router = require("express").Router();
 const {
   getAllHistory,
   getHistoryById,
-  postHistory,
-  CheckOut,
-  patchHistory,
+  getHistoryPerDay,
+  getTodayIncome,
+  getOderCount,
+  getyearlyIncome,
+  getChartMonthly,
 } = require("../controller/history");
 const { authorization } = require("../middleware/auth");
 const {
+  getAllHistoryRedis,
   getHistoryByIdRedis,
-  clearDataHistoryRedis,
-  getHistoryRedis,
+  getHistoryPerDayRedis,
+  getTodayIncomeRedis,
+  getOderCountRedis,
+  getyearlyIncomeRedis,
+  getChartMonthlyRedis,
 } = require("../middleware/redis");
 
-router.get("/", authorization, getHistoryRedis, getAllHistory);
+router.get("/", authorization, getAllHistoryRedis, getAllHistory);
 router.get("/:id", authorization, getHistoryByIdRedis, getHistoryById);
-
-router.post("/", authorization, postHistory);
-router.post("/CheckOut", authorization, CheckOut);
-
-router.patch("/:id", authorization, clearDataHistoryRedis, patchHistory);
+router.get(
+  "/days/days",
+  authorization,
+  getHistoryPerDayRedis,
+  getHistoryPerDay
+);
+router.get("/income/today", authorization, getTodayIncomeRedis, getTodayIncome);
+router.get("/order/count", authorization, getOderCountRedis, getOderCount);
+router.get(
+  "/income/year",
+  authorization,
+  getyearlyIncomeRedis,
+  getyearlyIncome
+);
+router.get(
+  "/chart/monthly",
+  authorization,
+  getChartMonthlyRedis,
+  getChartMonthly
+);
 
 module.exports = router;

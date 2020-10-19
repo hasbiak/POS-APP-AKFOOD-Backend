@@ -1,55 +1,101 @@
-const { getAllOrders, getOrdersById, postOrders } = require("../model/orders");
+const {
+  postOrder,
+  ordersHistory,
+  postOrders,
+  getSubTotal,
+  patchHistory,
+} = require("../model/orders");
+
 const helper = require("../helper/index");
-const qs = require("querystring");
-const redis = require("redis");
-const client = redis.createClient();
 
 module.exports = {
-  getAllOrders: async (request, response) => {
+  postOrder: async (request, response) => {
+    if (
+      request.body === undefined ||
+      request.body === null ||
+      request.body === ""
+    ) {
+      return helper.response(response, 404, "must input orders");
+    } else if (
+      request.body.orders === undefined ||
+      request.body.orders === null ||
+      request.body.orders === ""
+    ) {
+      return helper.response(response, 404, "orders must be filled");
+    } else if (
+      request.body.cashier === undefined ||
+      request.body.cashier === null ||
+      request.body.cashier === ""
+    ) {
+      return helper.response(response, 404, "cashier must be filled");
+    }
+
     try {
-      const result = await getAllOrders();
-      client.set(
-        `getorders:${JSON.stringify(request.query)}`,
-        JSON.stringify(result)
+      const setData = {
+        history_invoices: Math.floor(Math.random() * 1000000000) + 1000000000,
+        history_created_at: new Date(),
+        history_user_name: request.body.cashier,
+        history_subtotal: 0
+      };
+      const result = await postOrder(setData);
+
+      const requested = await request.body.orders;
+      const marble = await Promise.all(
+        requested.map(async (value) => {
+          if (
+            value.product_id === undefined ||
+            value.product_id === null ||
+            value.product_id === ""
+          ) {
+            return helper.response(response, 404, "product_id must be filled");
+          } else if (
+            value.orders_qty === undefined ||
+            value.orders_qty === null ||
+            value.orders_qty === ""
+          ) {
+            return helper.response(
+              response,
+              404,
+              "orders_qty must be filled"
+            );
+          }
+          const result2 = await ordersHistory(value.product_id);
+          const setData2 = {
+            history_id: result.history_id,
+            product_id: value.product_id,
+            orders_qty: value.orders_qty,
+            orders_total:
+              value.orders_qty * result2[0].product_price +
+              (value.orders_qty * result2[0].product_price * 10) / 100,
+          };
+          return (result3 = await postOrders(setData2));
+        })
       );
-      return helper.response(response, 200, "Success Get Order", result);
-    } catch (error) {
-      return helper.response(response, 400, "Bad Request!", error);
-    }
-  },
-  getOrdersById: async (request, response) => {
-    try {
-      const { id } = request.params;
-      const result = await getOrdersById(id);
-      if (result.length > 0) {
-        return helper.response(
-          response,
-          200,
-          "Success Get Order By ID",
-          result
-        );
-      } else {
-        return helper.response(response, 404, `Order by ID : ${id} Not Found`);
+      const i = result.history_id;
+      const result4 = await getSubTotal(i);
+
+      function getNumber(input, field) {
+        let output = [];
+        for (let i = 0; i < input.length; ++i) output.push(input[i][field]);
+        return output;
       }
+      subs = getNumber(result4, "SUM(orders_total)");
+      const marbeles = subs.flat();
+      const rouke = marbeles.find(Number);
+      const setData3 = {
+        history_subtotal: rouke,
+      };
+      const result5 = await patchHistory(setData3, i);
+      const data = {
+        history_id: result.history_id,
+        history_invoices: result.history_invoices,
+        history_user_name: result.history_user_name,
+        orders: marble,
+        history_subtotal: result5.history_subtotal,
+      };
+      return helper.response(response, 200, "Success Order Posted", data);
     } catch (error) {
-      return helper.response(response, 400, "Bad Request", error);
-    }
-  },
-  postOrders: async (request, response) => {
-    try {
-      const test = request.body.orders;
-      const testArr = test.map(async (value) => {
-        const setData = {
-          product_id: value.product_id,
-          order_qty: value.order_qty,
-          order_price: value.order_price,
-          order_created_at: new Date(),
-        };
-        const result = await postOrders(setData);
-        return helper.response(response, 201, "Orders Created", result);
-      });
-    } catch (error) {
-      return helper.response(response, 400, "Bad Request", error);
+      return helper.response(response, 404, "Bad Request", error);
     }
   },
 };

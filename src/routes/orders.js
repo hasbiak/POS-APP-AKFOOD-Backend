@@ -1,15 +1,8 @@
 const router = require("express").Router();
-const {
-  getAllOrders,
-  getOrdersById,
-  postOrders,
-} = require("../controller/orders");
+const { postOrder } = require("../controller/orders");
 const { authorization } = require("../middleware/auth");
-const { getOrdersRedis } = require("../middleware/redis");
+const { clearDataHistoryRedis } = require("../middleware/redis");
 
-router.get("/", authorization, getOrdersRedis, getAllOrders);
-router.get("/:id", authorization, getOrdersById);
-
-router.post("/", authorization, postOrders);
+router.post("/", authorization, clearDataHistoryRedis, postOrder);
 
 module.exports = router;

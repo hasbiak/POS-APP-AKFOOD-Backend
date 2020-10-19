@@ -1,7 +1,7 @@
 const connection = require("../config/mysql");
 
 module.exports = {
-  getAllCategory: () => {
+  getAllcategory: () => {
     return new Promise((resolve, reject) => {
       connection.query(`SELECT * FROM category`, (error, result) => {
         !error ? resolve(result) : reject(new Error(error));
@@ -11,7 +11,7 @@ module.exports = {
   getCategoryById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM category WHERE category_id = ?`,
+        "SELECT * FROM category WHERE category_id = ?",
         id,
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));

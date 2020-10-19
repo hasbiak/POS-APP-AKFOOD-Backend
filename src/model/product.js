@@ -1,20 +1,22 @@
 const connection = require("../config/mysql");
-
+const product = require("../controller/product");
 module.exports = {
-  getProduct: (sort, limit, offset, ascdsc) => {
+  getProduct: (sort, limit, offset) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM product ORDER BY ${sort} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`,
+        `SELECT * FROM product ORDER BY ${sort} LIMIT ? OFFSET ?`,
+        [limit, offset],
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }
       );
     });
   },
-  getWithOutSort: (limit, offset) => {
+  getProductByName: (search, limit) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM product LIMIT ${limit} OFFSET ${offset}`,
+        `SELECT * FROM product WHERE product_name LIKE ? LIMIT ?`,
+        [search, limit],
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }
@@ -24,7 +26,18 @@ module.exports = {
   getProductCount: () => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "SELECT COUNT(*) as total FROM product",
+        "SELECT COUNT(*) as total FROM product ",
+        (error, result) => {
+          !error ? resolve(result[0].total) : reject(new Error(error));
+        }
+      );
+    });
+  },
+  getProductCountName: (search) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT COUNT(*) as total FROM product WHERE product_name LIKE ?",
+        search,
         (error, result) => {
           !error ? resolve(result[0].total) : reject(new Error(error));
         }
@@ -34,18 +47,8 @@ module.exports = {
   getProductById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM product WHERE product_id = ?`,
+        "SELECT * FROM product WHERE product_id = ?",
         id,
-        (error, result) => {
-          !error ? resolve(result) : reject(new Error(error));
-        }
-      );
-    });
-  },
-  getProductByName: (name, limit) => {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        `SELECT * FROM product WHERE product_name LIKE "%${name}%" LIMIT ${limit}`,
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }

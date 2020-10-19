@@ -1,26 +1,22 @@
 const {
-  getAllCategory,
+  getAllcategory,
   getCategoryById,
   postCategory,
   patchCategory,
   deleteCategory,
 } = require("../model/category");
-const helper = require("../helper/index");
-const qs = require("querystring");
 const redis = require("redis");
+const fs = require("fs");
 const client = redis.createClient();
-
+const helper = require("../helper/index");
 module.exports = {
   getAllCategory: async (request, response) => {
     try {
-      const result = await getAllCategory();
-      client.set(
-        `getcategory:${JSON.stringify(request.query)}`,
-        JSON.stringify(result)
-      );
-      return helper.response(response, 200, "Success Get Category", result);
+      const result = await getAllcategory();
+      client.setex(`getcategoryall`, 3600, JSON.stringify(result));
+      return helper.response(response, 200, "Success Get All Category", result);
     } catch (error) {
-      return helper.response(response, 400, "Bad Request!", error);
+      return helper.response(response, 400, "Bad Request", error);
     }
   },
   getCategoryById: async (request, response) => {
@@ -28,18 +24,18 @@ module.exports = {
       const { id } = request.params;
       const result = await getCategoryById(id);
       if (result.length > 0) {
-        client.setex(`getcategorybyid:${id}`, 10000, JSON.stringify(result));
+        client.setex(`getcategorybyid:${id}`, 3600, JSON.stringify(result));
         return helper.response(
           response,
           200,
-          "Success Get Category By ID",
+          "Success Get Category By Id",
           result
         );
       } else {
         return helper.response(
           response,
           404,
-          `Category by ID : ${id} Not Found`
+          `Category By Id: ${id} Not Found`
         );
       }
     } catch (error) {
@@ -47,59 +43,81 @@ module.exports = {
     }
   },
   postCategory: async (request, response) => {
+    if (
+      request.body.category_name === undefined ||
+      request.body.category_name === null ||
+      request.body.category_name === ""
+    ) {
+      return helper.response(response, 404, "Category name must be filled");
+    } else if (
+      request.body.category_status === undefined ||
+      request.body.category_status === null ||
+      request.body.category_status === ""
+    ) {
+      return helper.response(response, 404, "Category status must be filled");
+    }
     try {
-      const { category_status, category_name } = request.body;
       const setData = {
+        category_name: request.body.category_name,
         category_created_at: new Date(),
-        category_status,
-        category_name,
+        category_updated_at: new Date(),
+        category_status: request.body.category_status,
       };
       const result = await postCategory(setData);
-      return helper.response(response, 201, "Category Created", result);
+      return helper.response(response, 200, "Success Post Category", result);
     } catch (error) {
       return helper.response(response, 400, "Bad Request", error);
     }
   },
   patchCategory: async (request, response) => {
+    if (
+      request.body.category_name === undefined ||
+      request.body.category_name === null ||
+      request.body.category_name === ""
+    ) {
+      return helper.response(response, 404, "Category name must be filled");
+    } else if (
+      request.body.category_status === undefined ||
+      request.body.category_status === null ||
+      request.body.category_status === ""
+    ) {
+      return helper.response(response, 404, "Category status must be filled");
+    }
     try {
       const { id } = request.params;
-      const { category_status, category_name } = request.body;
+      const { category_name, category_status } = request.body;
       const setData = {
-        category_status,
         category_name,
         category_updated_at: new Date(),
+        category_status,
       };
       const checkId = await getCategoryById(id);
       if (checkId.length > 0) {
         const result = await patchCategory(setData, id);
-        return helper.response(response, 201, "Category Updated", result);
+        return helper.response(
+          response,
+          200,
+          "Success Category Updated",
+          result
+        );
       } else {
         return helper.response(
           response,
           404,
-          `Category By Id : ${id} Not Found`
+          `Category By Id: ${id} Not Found`
         );
       }
     } catch (error) {
-      return helper.response(response, 400, "Bad Request", error);
+      return helper.response(response, 404, "Bad Request", error);
     }
   },
   deleteCategory: async (request, response) => {
     try {
       const { id } = request.params;
-      const cekId = await getCategoryById(id);
-      if (cekId.length > 0) {
-        const result = await deleteCategory(id);
-        return helper.response(response, 201, "category Deleted", result);
-      } else {
-        return helper.response(
-          response,
-          404,
-          `Data By Id: ${id} unknown / has been deleted`
-        );
-      }
+      const result = await deleteCategory(id);
+      return helper.response(response, 200, "Success Category Deleted", result);
     } catch (error) {
-      return helper.response(response, 400, "Bad Request", error);
+      return helper.response(response, 404, "Bad Request", error);
     }
   },
 };

@@ -1,113 +1,103 @@
 const connection = require("../config/mysql");
 
 module.exports = {
-  getHistory: (sort, limit, offset, ascdsc) => {
+  getAllHistory: () => {
     return new Promise((resolve, reject) => {
-      connection.query(
-        `SELECT * FROM history ORDER BY ${sort} ${ascdsc} LIMIT ${limit} OFFSET ${offset}`,
-        (error, result) => {
-          !error ? resolve(result) : reject(new Error(error));
-        }
-      );
-    });
-  },
-  getWithOutSort: (limit, offset) => {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        `SELECT * FROM history LIMIT ${limit} OFFSET ${offset}`,
-        (error, result) => {
-          !error ? resolve(result) : reject(new Error(error));
-        }
-      );
-    });
-  },
-  getHistoryCount: () => {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        "SELECT COUNT(*) as total FROM history",
-        (error, result) => {
-          !error ? resolve(result[0].total) : reject(new Error(error));
-        }
-      );
+      connection.query("SELECT * FROM history", (error, result) => {
+        !error ? resolve(result) : reject(new Error(error));
+      });
     });
   },
   getHistoryById: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM history WHERE history_id = ?`,
+        "SELECT * FROM history WHERE history_id = ?",
         id,
         (error, result) => {
-          !error ? resolve(result) : reject(new Error(error)); //product_id dari postman
+          !error ? resolve(result) : reject(new Error(error));
         }
       );
     });
   },
-  postHistory: (setData) => {
+  getHistoryPerDay: (date) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `INSERT INTO history SET ?`,
-        setData,
-        (error, result) => {
-          if (!error) {
-            const newResult = {
-              history_id: result.insertId,
-              ...setData,
-            };
-            resolve(newResult);
-          } else {
-            reject(new Error(error));
-          }
-        }
-      );
-    });
-  },
-  patchHistory: (setData, id) => {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        "UPDATE history SET ? Where history_id = ?",
-        [setData, id],
-        (error, result) => {
-          if (!error) {
-            const newResult = {
-              history_id: id,
-              ...setData,
-            };
-            resolve(newResult);
-          } else {
-            reject(new Error(error));
-          }
-        }
-      );
-    });
-  },
-  getMonthHistory: () => {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        "SELECT DATE(history_created_at) as date, sum(history_subtotal) as subtotal FROM history WHERE MONTH(history_created_at) = MONTH(NOW()) AND YEAR(history_created_at) = YEAR(NOW()) GROUP BY DATE(history_created_at)",
+        `SELECT history.history_id, history.history_invoices, history.history_user_name, purchase.purchase_id, purchase.product_id, product.product_name, purchase.purchase_qty, purchase.purchase_total, history.history_subtotal, history.history_created_at FROM history INNER JOIN purchase ON history.history_id = purchase.history_id INNER JOIN product ON purchase.product_id = product.product_id WHERE ${date}(history.history_created_at) = ${date}(NOW()) ORDER BY history.history_id DESC`,
+
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }
       );
     });
   },
-  getYearHistory: () => {
+  getTodayIncome: () => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "SELECT MONTH(history_created_at) as month, sum(history_subtotal) as subtotal FROM history WHERE YEAR(history_created_at) = YEAR(NOW()) GROUP BY MONTH(history_created_at)",
+        "SELECT SUM(history_subtotal) AS income From history WHERE DATE(history_created_at) = DATE(NOW())",
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }
       );
     });
   },
-  getTodayHistory: () => {
+  comparisonTodayIncome: () => {
     return new Promise((resolve, reject) => {
       connection.query(
-        "SELECT DATE(history_created_at) as date, sum(history_subtotal) as subtotal FROM history WHERE DATE(history_created_at) = DATE(NOW()) AND YEAR(history_created_at) = YEAR(NOW()) GROUP BY DATE(history_created_at)",
+        "SELECT SUM(history_subtotal) AS yesterdayIncome From history WHERE DATE(history_created_at) = DATE(NOW()- INTERVAL 1 DAY )",
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));
         }
       );
     });
   },
-}; 
+  getOderCount: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT COUNT(*) AS orders FROM history WHERE WEEK(history_created_at) = WEEK(NOW())",
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error));
+        }
+      );
+    });
+  },
+  comparisonLastWeekOrders: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT COUNT(*) AS lastWeekCount From history WHERE WEEK(history_created_at) = WEEK(NOW()- INTERVAL 1 WEEK )",
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error));
+        }
+      );
+    });
+  },
+  getyearlyIncome: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT SUM(history_subtotal) AS yearly From history WHERE YEAR(history_created_at) = YEAR(NOW())",
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error));
+        }
+      );
+    });
+  },
+  comparisonLastYearIncome: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT SUM(history_subtotal) AS lastYearIncome From history WHERE YEAR(history_created_at) = YEAR(NOW() - INTERVAL 1 YEAR)",
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error));
+        }
+      );
+    });
+  },
+  getChartMonthly: (months) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT DATE(history_created_at) AS historyDate, sum(history_subtotal) AS historySub FROM history WHERE MONTH(history_created_at) = ${months} AND YEAR(history_created_at) = YEAR(NOW()) GROUP BY DATE(history_created_at)`,
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error));
+        }
+      );
+    });
+  },
+};

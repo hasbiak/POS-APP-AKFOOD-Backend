@@ -1,43 +1,41 @@
 const multer = require("multer");
 const helper = require("../helper/index");
+
 const storage = multer.diskStorage({
   destination: (request, file, callback) => {
     callback(null, "./uploads/");
   },
   filename: (request, file, callback) => {
-    console.log(file);
     callback(
       null,
-      file.fieldname +
-        "-" +
-        new Date().toISOString().replace(/:/g, "-") +
-        "-" +
-        file.originalname
+      new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname
     );
   },
 });
-
 const fileFilter = (request, file, callback) => {
-  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+  if (
+    file.mimetype == "image/png" ||
+    file.mimetype == "image/jpg" ||
+    file.mimetype == "image/jpeg"
+  ) {
     callback(null, true);
   } else {
-    return callback(
-      new Error("Only support for JPEG and PNG File Extension"),
-      false
-    );
+    return callback(new Error("Only images files are allowed"), false);
   }
 };
-
-const limits = { fileSize: 1024 * 1024 * 1 };
-
-let upload = multer({ storage, fileFilter, limits }).single("product_image");
+const limits = { fileSize: 1024 * 1024 };
+let upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: limits,
+}).single("product_image");
 
 const uploadFilter = (request, response, next) => {
-  upload(request, response, function (err) {
-    if (err instanceof multer.MulterError) {
-      return helper.response(response, 400, err.message);
-    } else if (err) {
-      return helper.response(response, 400, err.message);
+  upload(request, response, function (error) {
+    if (error instanceof multer.MulterError) {
+      return helper.response(response, 400, error.message);
+    } else if (error) {
+      return helper.response(response, 400, error.message);
     }
     next();
   });

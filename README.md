@@ -1,11 +1,11 @@
 <h1 align="center">ExpressJS - AKFOOD RESTfull API</h1>
 
-AKFOOD is web application for order some menu, there are Restfull API for product, product category, order, and history. [More about Express](https://en.wikipedia.org/wiki/Express.js)
+With more and more new food related business started popping out the demand for new food application that's accessible and easy to use are growing, this project was made to statisfy that demand. [More about Express](https://en.wikipedia.org/wiki/Express.js)
 
 ## Built With
 
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-orange.svg?style=rounded-square)](https://expressjs.com/en/starter/installing.html)
-[![Node.js](https://img.shields.io/badge/Node.js-v.12.13-green.svg?style=rounded-square)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.17.1-orange.svg?style=rounded-square)](https://expressjs.com/en/starter/installing.html)
+[![Node.js](https://img.shields.io/badge/Node.js-v.12.18.2-green.svg?style=rounded-square)](https://nodejs.org/)
 
 ## Requirements
 
@@ -30,73 +30,74 @@ AKFOOD is web application for order some menu, there are Restfull API for produc
 Open .env file on your favorite code editor, and copy paste this code below :
 
 ```
-DB_HOST=localhost // Database Host
-DB_ROOT=root // Database Root
-DB_PASSWORD= // Password set for database is empty
-DB_NAME=akfood // Database
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_DATABASE=akfood
 
-DB_PORT=3001
-DB_IP=127.0.0.1
+PORT=3001
+IP=127.0.0.1
+
 ```
 
 ## End Point
 
 **1. GET**
 
-- `/product?page=1&limit=6&sort=product_id&ascdsc=asc`(Get all product, pagination, sort, and ascdsc)
+- `/product/`(Get all product)
+- `/product/:id`(Get product by id)
+- `/product/search/name`(Get product by name)
 
-  - `{ "page": 1, limit: 6, "sort": "product_id", "ascdsc": "asc"}`
+- `/category/`(Get all category)
+- `/category/:id`(Get category by id)
 
-- `/product/:id` (Get product by id)
+- `/history/:id`(Get history by id)
+- `/history/days/days`(Get history per day)
+- `/history/income/today`(Get income today)
+- `/history/order/count`(Get order count per week)
+- `/history/income/year`(Get income this year)
+- `/history/chart/monthly`(Get total income each day per month)
 
-- `/category` (Get all category)
-
-- `/category/:id` (Get category by id)
-
-- `/order` (Get all order)
-
-- `/order/:id` (Get order by id)
-
-- `/history` (Get all history)
-
-- `/history/:id` (Get history by id)
-
-- `/users/login` (Login for user)
-  - `{ "user_email": "hasbialwi70@gmail.com", "user_password": "123456"}`
+- `/users/user/`(Get all user)
+- `/users/user/:id`(Get user by id)
 
 **2. POST**
 
-- `/product` (Post product)
+- `/product/` (Post product)
 
-  - `{ "product_name": "chocorum", "product_price": 15000, "category_id": 2, product_image: (choose file) , "product_status" : 1}`
+  - `{ "category_id": 1, "product_name": "Espresso", "product_price": 10000 ,"product_image": espresso.jpg, "product_status": 1}`
 
-- `/category` (Post category)
+- `/category/` (Post category)
 
-  - `{ "category_name": "Other", "category_status": 1}`
+  - `{ "category_name": "Drink", "category_status": 1}`
 
-- `/users/register` (Register new user)
-  - `{ "user_email": "hasbialwi80@gmail.com", "user_password": "12345678", "user_name": "Hasbi"}`
+- `/orders/` (Post orders)
+
+  - `{ "orders": [{"product_id": 1, "orders_qty": 1},{"product_id": 1, "orders_qty": 3}] }`
+
+- `/users/register` (Register user)
+  - `{ "user_email": "hasbialwi70@gmail.com", "user_password": "Hasbi12345", "user_name": "hasbi alwi kusmana"}`
+- `/users/login` (Login user)
+  - `{ "user_email": "hasbialwi70@gmail.com", "user_password": "Hasbi12345"}`
 
 **3. PATCH**
 
 - `/product/:id` (Update product by id)
 
-  - `{ "product_name": "chocorum", "product_price": 15000, "category_id": 2, product_image: (choose file) , "product_status" : 1}`
+  - `{ "category_id": 1, "product_name": "Espresso", "product_price": 10000 ,"product_image": espresso.jpg, "product_status" : 1 }`
 
-  - `/category` (Post category)
-  - `{ "category_name": "Other", "category_status": 1}`
+- `/category/:id` (Update category by id)
+
+  - `{ "category_name": "Drink", "category_status" : 1 }`
+
+- `/users/patch/:id` (Update user by id)
+  - `{ "user_name": "hasbi alwi kusmana", "user_password": "Hasbi12345", "user_role": 2, "user_status": 1 }`
 
 **4. DELETE**
 
 - `/product/:id` (Delete product by id)
-
 - `/category/:id` (Delete category by id)
 
-**5. SEARCH**
+## Postman link
 
-- `/product/search/name?name=cappuccino&limit=6` (Search product)
-  - `{ "product_name": "Cappuccino"}`
-
-**Documentation API**
-
-https://web.postman.co/collections/12329591-c5b28761-cd7e-4a4a-96e2-3a1324169b02?version=latest&workspace=ed9da054-53e6-410a-83b5-b5aec64d38ac#511a9bbc-3ca2-4439-a8d8-de6382ef38f0
+[Link :](https://naxema.postman.co/collections/12329591-d56d7a60-6539-43c9-bbfb-17afc17798c9?version=latest&workspace=ed9da054-53e6-410a-83b5-b5aec64d38ac)

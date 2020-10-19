@@ -1,13 +1,107 @@
 const redis = require("redis");
 const client = redis.createClient();
 const helper = require("../helper/index");
+const { request, response } = require("express");
 
 module.exports = {
   getProductByIdRedis: (request, response, next) => {
     const { id } = request.params;
     client.get(`getproductbyid:${id}`, (error, result) => {
       if (!error && result != null) {
-        return helper.response(response, 200, JSON.parse(result));
+        return helper.response(
+          response,
+          200,
+          "Success Get Product By Id",
+          JSON.parse(result)
+        );
+      } else {
+        next();
+      }
+    });
+  },
+  getAllProductRedis: (request, response, next) => {
+    client.get(
+      `getproductall:${JSON.stringify(request.query)}`,
+      (error, result) => {
+        if (!error && result != null) {
+          const parsed = JSON.parse(result);
+          const results = parsed.result;
+          const pagination = parsed.pageInfo;
+          return helper.response(
+            response,
+            200,
+            "Success Get Product",
+            results,
+            pagination
+          );
+        } else {
+          next();
+        }
+      }
+    );
+  },
+  getProductByNameRedis: (request, response, next) => {
+    client.get(
+      `getproductbyname:${JSON.stringify(request.query)}`,
+      (error, result) => {
+        if (!error && result != null) {
+          const parsed = JSON.parse(result);
+          const results = parsed.result;
+          const pagination = parsed.pageInfo;
+          return helper.response(
+            response,
+            200,
+            "Success Get Product Name",
+            results,
+            pagination
+          );
+        } else {
+          next();
+        }
+      }
+    );
+  },
+
+  // ============================================================================================
+  getAllCategoryRedis: (request, response, next) => {
+    client.get(`getcategoryall`, (error, result) => {
+      if (!error && result != null) {
+        return helper.response(
+          response,
+          200,
+          "Success Get All Category",
+          JSON.parse(result)
+        );
+      } else {
+        next();
+      }
+    });
+  },
+  getCategoryByIdRedis: (request, response, next) => {
+    const { id } = request.params;
+    client.get(`getcategorybyid:${id}`, (error, result) => {
+      if (!error && result != null) {
+        return helper.response(
+          response,
+          200,
+          "Success Get Category By Id",
+          JSON.parse(result)
+        );
+      } else {
+        next();
+      }
+    });
+  },
+  // ================================================================================
+  getAllHistoryRedis: (request, response, next) => {
+    client.get(`gethistoryall`, (error, result) => {
+      if (!error && result != null) {
+        return helper.response(
+          response,
+          200,
+          "Sukses Get History",
+          JSON.parse(result)
+        );
       } else {
         next();
       }
@@ -17,119 +111,92 @@ module.exports = {
     const { id } = request.params;
     client.get(`gethistorybyid:${id}`, (error, result) => {
       if (!error && result != null) {
-        console.log("data history ada di dalam redis");
-        return helper.response(response, 200, JSON.parse(result));
+        return helper.response(
+          response,
+          200,
+          "Success Get History By Id",
+          JSON.parse(result)
+        );
       } else {
-        console.log("data history tidak ada di dalam redis");
         next();
       }
     });
   },
-  getCategoryByIdRedis: (request, response, next) => {
-    const { id } = request.params;
-    client.get(`getcategorybyid:${id}`, (error, result) => {
+  getHistoryPerDayRedis: (request, response, next) => {
+    client.get(
+      `gethistoryperday:${JSON.stringify(request.query)}`,
+      (error, result) => {
+        if (!error && result != null) {
+          return helper.response(
+            response,
+            200,
+            "Sukses Get Per Day",
+            JSON.parse(result)
+          );
+        } else {
+          next();
+        }
+      }
+    );
+  },
+  getTodayIncomeRedis: (request, response, next) => {
+    client.get(`gethistorytodayincome`, (error, result) => {
       if (!error && result != null) {
-        console.log("data category ada di dalam redis");
-        return helper.response(response, 200, JSON.parse(result));
+        return helper.response(
+          response,
+          200,
+          "Sukses Get Today Income",
+          JSON.parse(result)
+        );
       } else {
-        console.log("data category tidak ada di dalam redis");
         next();
       }
     });
   },
-  getProductRedis: (request, response, next) => {
-    client.get(
-      `getproduct:${JSON.stringify(request.query)}`,
-      (error, result) => {
-        const newResult = JSON.parse(result);
-
-        if (!error && result != null) {
-          return helper.response(
-            response,
-            200,
-            "Successfull Get Data",
-            newResult.result,
-            newResult.page
-          );
-        } else {
-          next();
-        }
+  getOderCountRedis: (request, response, next) => {
+    client.get(`gethistoryordercount`, (error, result) => {
+      if (!error && result != null) {
+        return helper.response(
+          response,
+          200,
+          "Sukses Get Count",
+          JSON.parse(result)
+        );
+      } else {
+        next();
       }
-    );
-  },
-  getHistoryRedis: (request, response, next) => {
-    client.get(
-      `gethistory:${JSON.stringify(request.query)}`,
-      (error, result) => {
-        const newResult = JSON.parse(result);
-
-        if (!error && result != null) {
-          return helper.response(
-            response,
-            200,
-            "Successfull Get Data",
-            newResult.result,
-            newResult.page
-          );
-        } else {
-          next();
-        }
-      }
-    );
-  },
-  getCategoryRedis: (request, response, next) => {
-    client.get(
-      `getcategory:${JSON.stringify(request.query)}`,
-      (error, result) => {
-        const newResult = JSON.parse(result);
-
-        if (!error && result != null) {
-          return helper.response(
-            response,
-            200,
-            "Successfull Get Data",
-            newResult.result,
-            newResult.page
-          );
-        } else {
-          next();
-        }
-      }
-    );
-  },
-  getOrdersRedis: (request, response, next) => {
-    client.get(
-      `getorders:${JSON.stringify(request.query)}`,
-      (error, result) => {
-        const newResult = JSON.parse(result);
-
-        if (!error && result != null) {
-          return helper.response(
-            response,
-            200,
-            "Successfull Get Data",
-            newResult.result,
-            newResult.page
-          );
-        } else {
-          next();
-        }
-      }
-    );
-  },
-  clearhistoryRedisById: (request, response, next) => {
-    const { id } = request.params;
-    client.del(`gethistorybyid:${id}`, (error, result) => {
-      console.log(result);
-      next();
     });
   },
-  clearCategoryRedisById: (request, response, next) => {
-    const { id } = request.params;
-    client.del(`getcategorybyid:${id}`, (error, result) => {
-      console.log(result);
-      next();
+  getyearlyIncomeRedis: (request, response, next) => {
+    client.get(`gethistoryyearincome`, (error, result) => {
+      if (!error && result != null) {
+        return helper.response(
+          response,
+          200,
+          "Sukses Get Yearly Income",
+          JSON.parse(result)
+        );
+      } else {
+        next();
+      }
     });
+  },
+  getChartMonthlyRedis: (request, response, next) => {
+    client.get(
+      `gethistorychartmonthly${JSON.stringify(request.query)}`,
+      (error, result) => {
+        if (!error && result != null) {
+          return helper.response(
+            response,
+            200,
+            "Sukses Get Chart Monthly",
+            JSON.parse(result)
+          );
+        } else {
+          next();
+        }
+      }
+    );
   },
   clearDataProductRedis: (request, response, next) => {
     client.keys("getproduct*", (err, keys) => {
@@ -152,7 +219,7 @@ module.exports = {
     });
   },
   clearDataHistoryRedis: (request, response, next) => {
-    client.keys("getHistory*", (err, keys) => {
+    client.keys("gethistory*", (err, keys) => {
       if (keys.length > 0) {
         keys.forEach((value) => {
           client.del(value);

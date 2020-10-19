@@ -1,217 +1,299 @@
 const {
-  getHistory,
-  getHistoryCount,
+  getAllHistory,
   getHistoryById,
-  postHistory,
-  patchHistory,
-  getWithOutSort,
-  getMonthHistory,
-  getYearHistory,
-  getTodayHistory,
+  getHistoryPerDay,
+  getTodayIncome,
+  comparisonTodayIncome,
+  getOderCount,
+  comparisonLastWeekOrders,
+  getyearlyIncome,
+  comparisonLastYearIncome,
+  getChartMonthly,
 } = require("../model/history");
-const { postOrders, getOrdersById } = require("../model/orders");
-const { getProductById } = require("../model/product");
-const helper = require("../helper/index");
-const qs = require("querystring");
+const { request } = require("express");
 const redis = require("redis");
 const client = redis.createClient();
 
-const getPrevLink = (page, currentQuery) => {
-  if (page > 1) {
-    const generatedPage = {
-      page: page - 1,
-    };
-    const resultPrevLink = { ...currentQuery, ...generatedPage };
-    return qs.stringify(resultPrevLink);
-  } else {
-    return null;
-  }
-};
-const getNextLink = (page, totalPage, currentQuery) => {
-  if (page < totalPage) {
-    const generatedPage = {
-      page: page + 1,
-    };
-    const resultNextLink = { ...currentQuery, ...generatedPage };
-    return qs.stringify(resultNextLink);
-  } else {
-    return null;
-  }
-};
+const helper = require("../helper/index");
 
 module.exports = {
   getAllHistory: async (request, response) => {
-    let { sort, limit, page, ascdsc } = request.query;
-    page = parseInt(page);
-    limit = parseInt(limit);
-    let totalData = await getHistoryCount();
-    let getMonth = await getMonthHistory();
-    let getYear = await getYearHistory();
-    let getToday = await getTodayHistory();
-    let totalPage = Math.ceil(totalData / limit);
-    let offset = page * limit - limit;
-    let prevLink = getPrevLink(page, request.query);
-    let nextLink = getNextLink(page, totalPage, request.query);
-    const pageInfo = {
-      page,
-      totalPage,
-      limit,
-      totalData,
-      prevLink: prevLink && `http://127.0.0.1:3001/history?${prevLink}`,
-      nextLink: nextLink && `http://127.0.0.1:3001/history?${nextLink}`,
-      getMonth,
-      getYear,
-      getToday,
-    };
     try {
-      if (typeof request.query.sort === "undefined") {
-        const withOutSort = await getWithOutSort(limit, offset);
-        const newData = { withOutSort, pageInfo };
-        client.set(
-          `gethistory:${JSON.stringify(request.query)}`,
-          JSON.stringify(newData)
-        );
-        return helper.response(
-          response,
-          200,
-          "Success Get History",
-          withOutSort,
-          pageInfo
-        );
-      } else {
-        const result = await getHistory(sort, limit, offset, ascdsc);
-        const newData = { result, pageInfo };
-        client.set(
-          `gethistory:${JSON.stringify(request.query)}`,
-          JSON.stringify(newData)
-        );
-        return helper.response(
-          response,
-          200,
-          `Success Get History with sort by ${sort}`,
-          result,
-          pageInfo
-        );
-      }
+      const result = await getAllHistory();
+      client.setex(`gethistoryall`, 3600, JSON.stringify(result));
+      return helper.response(response, 200, "Sukses Get History", result);
     } catch (error) {
-      return helper.response(response, 400, "Bad Request!", error);
+      return helper.response(response, 400, "Bad Request", error);
     }
   },
-
   getHistoryById: async (request, response) => {
     try {
       const { id } = request.params;
       const result = await getHistoryById(id);
-
       if (result.length > 0) {
-        client.setex(`gethistorybyid:${id}`, 10000, JSON.stringify(result));
+        client.setex(`gethistorybyid:${id}`, 3600, JSON.stringify(result));
         return helper.response(
           response,
           200,
-          `Success Get History By ID : ${id} `,
+          "Success Get History By Id",
           result
         );
       } else {
-        return helper.response(
-          response,
-          404,
-          `History by ID : ${id} Not Found`
-        );
+        return helper.response(response, 404, `History By Id: ${id} Not Found`);
       }
-    } catch (error) {
-      return helper.response(response, 400, "Bad Request!", error);
-    }
-  },
-  postHistory: async (request, response) => {
-    let history_subtotal = 0;
-    let invoice = Math.floor(Math.random() * 1000000);
-    try {
-      const setData = {
-        invoice,
-        history_subtotal,
-        history_created_at: new Date(),
-      };
-      const result = await postHistory(setData);
-
-      return helper.response(response, 201, "History Created", result);
     } catch (error) {
       return helper.response(response, 400, "Bad Request", error);
     }
   },
-  CheckOut: async (request, response) => {
-    // console.log(request.body);
+
+  getHistoryPerDay: async (request, response) => {
+    let { date } = request.query;
     try {
-      let history_subtotal = 0;
-      let invoice = Math.floor(Math.random() * 1000000);
-      const setData = {
-        invoice,
-        history_subtotal,
-        history_created_at: new Date(),
-      };
-      const result = await postHistory(setData);
-
-      let idHistory = result.history_id;
-      let totalPrice = 0;
-      let totalResult = {
-        history_id: idHistory,
-        invoice,
-        orders: request.body.history,
-        subtotal: null,
-        history_created_at: result.history_created_at,
-      };
-      request.body.history.map(async (value, index) => {
-        const products = await getProductById(value.product_id);
-        const productName = JSON.stringify(products[0].product_name);
-        const productPrice = JSON.stringify(products[0].product_price);
-
-        const setData = {
-          history_id: idHistory,
-          product_id: value.product_id,
-          order_qty: value.order_qty,
-          order_price: Number(productPrice),
-          order_created_at: new Date(),
-        };
-        totalPrice += value.order_qty * Number(productPrice);
-
-        const result = await postOrders(setData);
-        request.body.history[index].product_name = JSON.parse(productName);
+      const result = await getHistoryPerDay(date);
+      const mapped = result.map((value) => {
+        return (setData = {
+          history_id: value.history_id,
+          history_invoices: "SIE-" + value.history_invoices,
+          cashier: value.history_user_name,
+          history_created_at: value.history_created_at.toLocaleString(
+            "default",
+            {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            }
+          ),
+          orders: value.product_name + " " + "x" + value._qty,
+          history_subtotal: "Rp. " + value.history_subtotal,
+        });
       });
 
-      setTimeout(async () => {
-        totalResult.subtotal = totalPrice + totalPrice * 0.1;
-        await patchHistory(
-          {
-            history_subtotal: totalPrice,
-            history_created_at: new Date(),
-          },
-          idHistory
-        );
-        return helper.response(response, 201, "history created", totalResult);
-      }, 500);
+      let output = [];
+      mapped.forEach((item) => {
+        let existing = output.filter((v, i) => {
+          return v.history_id == item.history_id;
+        });
+        if (existing.length) {
+          let existingIndex = output.indexOf(existing[0]);
+          output[existingIndex].orders = output[existingIndex].orders.concat(
+            item.orders
+          );
+        } else {
+          if (typeof item.orders == "string") {
+            item.orders = [item.orders];
+          }
+          output.push(item);
+        }
+      });
+
+      const results = output.map((value) => {
+        return (setData2 = {
+          history_id: value.history_id,
+          history_invoices: value.history_invoices,
+          cashier: value.cashier,
+          history_created_at: value.history_created_at,
+          orders: value.orders.toString(),
+          history_subtotal: value.history_subtotal,
+        });
+      });
+      client.setex(
+        `gethistoryperday:${JSON.stringify(request.query)}`,
+        3600,
+        JSON.stringify(results)
+      );
+      return helper.response(response, 200, "Sukses Get Per Day", results);
     } catch (error) {
       return helper.response(response, 400, "Bad Request", error);
     }
   },
-  patchHistory: async (request, response) => {
+  getTodayIncome: async (request, response) => {
     try {
-      const { id } = request.params;
-      const { order_id, history_subtotal } = request.body;
-      const setData = {
-        order_id,
-        history_subtotal,
-        history_updated_at: new Date(),
-      };
-      const checkId = await getHistoryById(id);
-      if (checkId.length > 0) {
-        const result = await patchHistory(setData, id);
-        return helper.response(response, 201, "History Updated", result);
+      const result = await getTodayIncome();
+      const mapped = result.map((value) => {
+        if (
+          value.income === undefined ||
+          value.income === null ||
+          value.income === ""
+        ) {
+          return (value.income = 0);
+        } else {
+          return value.income;
+        }
+      });
+      const result2 = mapped[0];
+      const incomeYes = await comparisonTodayIncome();
+      const mapped2 = incomeYes.map((value) => {
+        if (
+          value.yesterdayIncome === undefined ||
+          value.yesterdayIncome === null ||
+          value.yesterdayIncome === ""
+        ) {
+          return (value.yesterdayIncome = 0);
+        } else {
+          return value.yesterdayIncome;
+        }
+      });
+      if (mapped2[0] == 0) {
+        incomeYesterday = "+" + result2 * 100 + "%";
       } else {
-        return helper.response(
-          response,
-          404,
-          `History By Id : ${id} Not Found`
-        );
+        const mapped3 = mapped2.map((value) => {
+          if (value > result2) {
+            let values = value - result2;
+            let count = (values / value) * 100;
+            return "-" + count.toFixed(2);
+          } else if (value < result2) {
+            let values = result2 - value;
+            let count = (values / value) * 100;
+            return "+" + count.toFixed(2);
+          } else if ((value = result2)) {
+            let values = 0;
+            return "+" + values;
+          }
+        });
+        incomeYesterday = mapped3[0] + "%";
       }
+
+      const setData = {
+        incomes: result2,
+        incomeYesterday,
+      };
+      client.setex(`gethistorytodayincome`, 3600, JSON.stringify(setData));
+      return helper.response(response, 200, "Sukses Get Today Income", setData);
+    } catch (error) {
+      return helper.response(response, 400, "Bad Request", error);
+    }
+  },
+  getOderCount: async (request, response) => {
+    try {
+      const result = await getOderCount();
+      const mapped = result.map((value) => {
+        return value.orders;
+      });
+      const result2 = mapped[0];
+      const lastWeekOrder = await comparisonLastWeekOrders();
+      const mapped2 = lastWeekOrder.map((value) => {
+        if (
+          value.lastWeekCount === undefined ||
+          value.lastWeekCount === null ||
+          value.lastWeekCount === ""
+        ) {
+          return (value.lastWeekCount = 0);
+        } else {
+          return value.lastWeekCount;
+        }
+      });
+      if (mapped2[0] == 0) {
+        countLastWeek = "+" + result2 * 100 + "%";
+      } else {
+        const mapped3 = mapped2.map((value) => {
+          if (value > result2) {
+            let values = value - result2;
+            let count = (values / value) * 100;
+            return "-" + count.toFixed(2);
+          } else if (value < result2) {
+            let values = result2 - value;
+            let count = (values / value) * 100;
+            return "+" + count.toFixed(2);
+          } else if ((value = result2)) {
+            let values = 0;
+            return "+" + values;
+          }
+        });
+        countLastWeek = mapped3[0] + "%";
+      }
+
+      const setData = {
+        countThisWeek: result2,
+        countLastWeek,
+      };
+      client.setex(`gethistoryordercount`, 3600, JSON.stringify(setData));
+      return helper.response(response, 200, "Sukses Get Count", setData);
+    } catch (error) {
+      return helper.response(response, 400, "Bad Request", error);
+    }
+  },
+  getyearlyIncome: async (request, response) => {
+    try {
+      const result = await getyearlyIncome();
+      const mapped = result.map((value) => {
+        return value.yearly;
+      });
+      const result2 = mapped[0];
+      const lastYIncome = await comparisonLastYearIncome();
+      const mapped2 = lastYIncome.map((value) => {
+        if (
+          value.lastYearIncome === undefined ||
+          value.lastYearIncome === null ||
+          value.lastYearIncome === ""
+        ) {
+          return (value.lastYearIncome = 0);
+        } else {
+          return value.lastYearIncome;
+        }
+      });
+
+      if (mapped2[0] == 0) {
+        countLastYear = "+" + result2 * 100 + "%";
+      } else {
+        const mapped3 = mapped2.map((value) => {
+          if (value > result2) {
+            let values = value - result2;
+            let count = (values / value) * 100;
+            return "-" + count.toFixed(2);
+          } else if (value < result2) {
+            let values = result2 - value;
+            let count = (values / value) * 100;
+            return "+" + count.toFixed(2);
+          } else if ((value = result2)) {
+            let values = 0;
+            return "+" + values;
+          }
+        });
+        countLastYear = mapped3[0] + "%";
+      }
+      const setData = {
+        countThisYear: result2,
+        countLastYear,
+      };
+      client.setex(`gethistoryyearincome`, 3600, JSON.stringify(setData));
+      return helper.response(
+        response,
+        200,
+        "Sukses Get Yearly Income",
+        setData
+      );
+    } catch (error) {
+      return helper.response(response, 400, "Bad Request", error);
+    }
+  },
+  getChartMonthly: async (request, response) => {
+    let { months } = request.query;
+    if (months === undefined || months === null || months === "") {
+      months = `MONTH(NOW())`;
+    }
+    try {
+      const result = await getChartMonthly(months);
+      const mapped = result.map((value) => {
+        return (setData = {
+          history_created_at: value.historyDate.getDate(),
+          history_subtotal: value.historySub,
+        });
+      });
+      const reduced = mapped.reduce((acc, item) => {
+        acc[item.history_created_at] = item.history_subtotal;
+        return acc;
+      }, {});
+      client.setex(
+        `gethistorychartmonthly${JSON.stringify(request.query)}`,
+        3600,
+        JSON.stringify(reduced)
+      );
+      return helper.response(
+        response,
+        200,
+        "Sukses Get Chart Monthly",
+        reduced
+      );
     } catch (error) {
       return helper.response(response, 400, "Bad Request", error);
     }
