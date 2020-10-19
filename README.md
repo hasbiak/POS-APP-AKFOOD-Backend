@@ -100,4 +100,4 @@ IP=127.0.0.1
 
 ## Postman link
 
-[Link :](https://naxema.postman.co/collections/12329591-d56d7a60-6539-43c9-bbfb-17afc17798c9?version=latest&workspace=ed9da054-53e6-410a-83b5-b5aec64d38ac)
+[Link:https://naxema.postman.co/collections/12329591-d56d7a60-6539-43c9-bbfb-17afc17798c9?version=latest&workspace=ed9da054-53e6-410a-83b5-b5aec64d38ac]
